@@ -12,7 +12,7 @@ pages_build_output_dir = "public"
 #   wrangler kv namespace create SITE_DATA
 [[kv_namespaces]]
 binding = "SITE_DATA"
-id = "PASTE_KV_NAMESPACE_ID_HERE"
+id = "05da781a41f74df1a4877e20fe7b3a13"
 
 # Secrets (NEVER put them in this file). Set them with:
 #   wrangler pages secret put ADMIN_PASSWORD   # admin login password
