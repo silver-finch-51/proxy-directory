@@ -8,6 +8,7 @@ cd "$(dirname "$0")/.."
 wrangler kv key put --binding SITE_DATA settings --path seed/settings.json
 wrangler kv key put --binding SITE_DATA apps --path seed/apps.json
 wrangler kv key put --binding SITE_DATA airports --path seed/airports.json
+wrangler kv key put --binding SITE_DATA vps --path seed/vps.json
 wrangler kv key put --binding SITE_DATA star_history --path seed/star_history.json
 
-echo "seed done: settings, apps, airports, star_history"
+echo "seed done: settings, apps, airports, vps, star_history"

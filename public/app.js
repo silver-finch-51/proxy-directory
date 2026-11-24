@@ -143,6 +143,7 @@ function renderAirports(airports) {
   section.hidden = false;
   nav.hidden = false;
   $("#airportList").innerHTML = airports.map((a) => `<article class="airport">
+    ${a.iconUrl ? `<img class="airport-icon" src="${esc(a.iconUrl)}" alt="" loading="lazy" onerror="this.remove()">` : ""}
     <h3>${a.officialUrl
       ? `<a href="${esc(a.officialUrl)}" target="_blank" rel="noopener">${esc(a.name)}</a>`
       : esc(a.name)}${a.recommended ? '<span class="badge">推荐</span>' : ""}</h3>
@@ -150,6 +151,35 @@ function renderAirports(airports) {
     ${a.traffic ? `<p>流量：${esc(a.traffic)}</p>` : ""}
     ${a.nodes ? `<p>节点：${esc(a.nodes)}</p>` : ""}
     ${a.notes ? `<p>${esc(a.notes)}</p>` : ""}
+  </article>`).join("");
+}
+
+const TIER_LABEL = { cheap: "便宜", mid: "中等", premium: "高端" };
+
+function renderVps(vps) {
+  const section = $("#vps");
+  const nav = $("#navVps");
+  if (!vps || vps.length === 0) {
+    section.hidden = true;
+    nav.hidden = true;
+    return;
+  }
+  section.hidden = false;
+  nav.hidden = false;
+  $("#vpsList").innerHTML = vps.map((v) => `<article class="vps">
+    ${v.iconUrl ? `<div class="vps-logo"><img src="${esc(v.iconUrl)}" alt="" loading="lazy" onerror="this.closest('.vps-logo').remove()"></div>` : ""}
+    <div class="vps-body">
+    <h3>${v.officialUrl
+      ? `<a href="${esc(v.officialUrl)}" target="_blank" rel="noopener">${esc(v.name)}</a>`
+      : esc(v.name)}${v.recommended ? '<span class="badge">推荐</span>' : ""}${v.tier ? `<span class="tier tier-${esc(v.tier)}">${esc(TIER_LABEL[v.tier] || v.tier)}</span>` : ""}</h3>
+    <p class="vps-specs">${[v.cpu, v.memory, v.disk, v.bandwidth].filter(Boolean).join(" / ") || "配置以官网为准"}</p>
+    ${v.locations ? `<p>机房：${esc(v.locations)}</p>` : ""}
+    ${v.notes ? `<p class="muted">${esc(v.notes)}</p>` : ""}
+    </div>
+    <div class="vps-side">
+      ${v.officialUrl ? `<a class="dl-btn" href="${esc(v.officialUrl)}" target="_blank" rel="noopener">官网</a>` : ""}
+      <span class="price">${esc(v.price || "")}</span>
+    </div>
   </article>`).join("");
 }
 
@@ -166,6 +196,7 @@ async function init() {
   fillFilterOptions();
   applyFilters();
   renderAirports(data.airports || []);
+  renderVps(data.vps || []);
   for (const id of ["q", "fPlatform", "fCore", "fPrice", "fOpen", "fSort"]) {
     $("#" + id).addEventListener("input", applyFilters);
     $("#" + id).addEventListener("change", applyFilters);

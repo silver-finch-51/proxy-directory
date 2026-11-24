@@ -32,6 +32,7 @@
     <div class="tabs">
       <button data-tab="apps" class="active">应用</button>
       <button data-tab="airports">机场</button>
+      <button data-tab="vps">VPS</button>
       <button data-tab="settings">站点设置</button>
       <span class="spacer"></span>
       <button id="refreshStarsBtn" class="secondary">刷新 Star</button>
@@ -56,6 +57,17 @@
       <table id="airportTable">
         <thead><tr>
           <th>机场</th><th>价格</th><th>排序</th><th>状态</th><th>操作</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div id="tab-vps" class="tab-panel" hidden>
+      <button id="newVpsBtn">＋ 新增 VPS</button>
+      <div id="vpsFormWrap"></div>
+      <table id="vpsTable">
+        <thead><tr>
+          <th>VPS</th><th>价格</th><th>档位</th><th>排序</th><th>状态</th><th>操作</th>
         </tr></thead>
         <tbody></tbody>
       </table>

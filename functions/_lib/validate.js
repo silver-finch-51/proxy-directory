@@ -87,6 +87,7 @@ export function normalizeAirport(input, existing) {
     id: base.id || null,
     name: toStringOrNull(input.name) || base.name || "",
     officialUrl: toStringOrNull(input.officialUrl),
+    iconUrl: toStringOrNull(input.iconUrl),
     price: toStringOrNull(input.price),
     traffic: toStringOrNull(input.traffic),
     nodes: toStringOrNull(input.nodes),
@@ -95,6 +96,40 @@ export function normalizeAirport(input, existing) {
     recommended: toBool(input.recommended, false),
     offline: toBool(input.offline, false),
   };
+}
+
+// Normalize a VPS provider record coming from the admin form / API.
+export function normalizeVps(input, existing) {
+  const base = existing || {};
+  const tier = ["cheap", "mid", "premium"].includes(input.tier)
+    ? input.tier
+    : (base.tier || "mid");
+  return {
+    id: base.id || null,
+    name: toStringOrNull(input.name) || base.name || "",
+    officialUrl: toStringOrNull(input.officialUrl),
+    tier,
+    price: toStringOrNull(input.price),
+    cpu: toStringOrNull(input.cpu),
+    memory: toStringOrNull(input.memory),
+    disk: toStringOrNull(input.disk),
+    bandwidth: toStringOrNull(input.bandwidth),
+    locations: toStringOrNull(input.locations),
+    notes: toStringOrNull(input.notes),
+    iconUrl: toStringOrNull(input.iconUrl),
+    sortOrder: toNumberOrNull(input.sortOrder) ?? 0,
+    recommended: toBool(input.recommended, false),
+    offline: toBool(input.offline, false),
+  };
+}
+
+export function newVpsId() {
+  return (
+    "vps-" +
+    Date.now().toString(36) +
+    "-" +
+    Math.random().toString(36).slice(2, 8)
+  );
 }
 
 export function newAirportId() {

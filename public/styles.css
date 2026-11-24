@@ -150,3 +150,41 @@ body { padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
 }
 .bottom-nav a:hover { color: #111; text-decoration: none; }
 .bottom-nav a[aria-current="page"] { background: #eef3ff; color: #0b5fff; font-weight: 700; }
+
+/* vps */
+.vps-list { display: grid; gap: 12px; }
+.vps {
+  background: #fff; border: 1px solid #e3e3e0; border-radius: 10px; padding: 14px 16px;
+  display: flex; gap: 14px; align-items: flex-start;
+}
+.vps-logo { flex: none; width: 150px; display: flex; align-items: center; min-height: 44px; }
+.vps-logo img { max-width: 150px; max-height: 44px; width: auto; height: auto; object-fit: contain; }
+.vps-body { flex: 1; min-width: 0; }
+.vps h3 { margin: 0 0 4px; font-size: 17px; }
+.vps p { margin: 2px 0; font-size: 14px; color: #444; }
+.vps .vps-specs { font-weight: 600; color: #1a1a1a; }
+.vps .badge {
+  display: inline-block; background: #e6f7e6; color: #1a7a1a;
+  font-size: 12px; border-radius: 4px; padding: 1px 8px; margin-left: 8px;
+}
+.vps .tier {
+  display: inline-block; font-size: 12px; border-radius: 4px; padding: 1px 8px; margin-left: 8px;
+}
+.vps .tier-cheap { background: #e6f7e6; color: #1a7a1a; }
+.vps .tier-mid { background: #eef3ff; color: #0b5fff; }
+.vps .tier-premium { background: #fff1e6; color: #b25e00; }
+.vps-side { flex: none; text-align: center; }
+.vps-side .dl-btn {
+  display: inline-block; background: #f0f0ee; color: #0b5fff;
+  font-weight: 700; border-radius: 999px; padding: 10px 22px;
+}
+.vps-side .dl-btn:hover { text-decoration: none; }
+.vps-side .price { display: block; margin-top: 6px; font-size: 13px; color: #666; }
+@media (max-width: 640px) {
+  .vps-logo { width: 110px; }
+  .vps-logo img { max-width: 110px; max-height: 36px; }
+  .vps-side .dl-btn { padding: 8px 14px; }
+}
+
+/* airport icons (Task 2) */
+.airport .airport-icon { height: 40px; width: auto; max-width: 160px; object-fit: contain; display: block; margin-bottom: 8px; }

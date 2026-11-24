@@ -1,7 +1,8 @@
-// KV helpers. One namespace (SITE_DATA) with four keys:
+// KV helpers. One namespace (SITE_DATA) with five keys:
 //   settings     -> { siteName: string }
 //   apps         -> [ app, ... ]          (full app records, see seed/apps.json)
 //   airports     -> [ airport, ... ]      (starts empty)
+//   vps          -> [ vps, ... ]          (starts with 10 seeded providers)
 //   star_history -> { "YYYY-MM-DD": { slug: stars } }  (daily GitHub star snapshots)
 
 export async function loadSettings(env) {
@@ -27,6 +28,14 @@ export async function loadAirports(env) {
 
 export async function saveAirports(env, airports) {
   await env.SITE_DATA.put("airports", JSON.stringify(airports));
+}
+
+export async function loadVps(env) {
+  return (await env.SITE_DATA.get("vps", "json")) || [];
+}
+
+export async function saveVps(env, vps) {
+  await env.SITE_DATA.put("vps", JSON.stringify(vps));
 }
 
 export async function loadHistory(env) {

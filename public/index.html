@@ -46,6 +46,11 @@
     <p class="muted">价格与套餐以官网为准。</p>
     <div id="airportList" class="airport-list"></div>
   </section>
+  <section id="vps" hidden>
+    <h2>VPS</h2>
+    <p class="muted">价格与配置以官网为准。</p>
+    <div id="vpsList" class="vps-list"></div>
+  </section>
 </main>
 <footer class="wrap muted">
   <p>Star 数每天早上自动从 GitHub 刷新；商店评分数来自公开商店页面快照。本站仅收录官方下载链接，不含任何邀请码或推广链接。</p>
@@ -53,6 +58,7 @@
 <script src="/app.js"></script>
 <nav class="bottom-nav" aria-label="主要栏目">
   <a href="/#apps" aria-current="page">应用目录</a>
+  <a href="/#vps" id="navVps" hidden>VPS</a>
   <a href="/#airports" id="navAirports" hidden>机场</a>
   <a href="/admin.html">管理后台</a>
 </nav>

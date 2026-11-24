@@ -27,7 +27,7 @@ cloudflare/
 │   └── _headers             # 基础安全头
 ├── functions/               # Pages Functions（API 层）
 │   ├── _lib/                # 不参与路由的共享代码（_ 前缀目录不路由）
-│   │   ├── store.js         # KV 读写：settings / apps / airports / star_history
+│   │   ├── store.js         # KV 读写：settings / apps / airports / vps / star_history
 │   │   ├── auth.js          # 后台登录：HMAC 令牌，密钥为 ADMIN_PASSWORD
 │   │   ├── validate.js      # 入参校验与归一化
 │   │   └── refreshStars.js  # Star 刷新（定时与手动共用同一份代码）
@@ -41,6 +41,8 @@ cloudflare/
 │       │   ├── apps/[slug].js   # PUT 修改 / DELETE 删除
 │       │   ├── airports.js      # GET 列表 / POST 新建
 │       │   ├── airports/[id].js # PUT 修改 / DELETE 删除
+│       │   ├── vps.js      # GET 列表 / POST 新建
+│       │   ├── vps/[id].js # PUT 修改 / DELETE 删除
 │       │   ├── settings.js      # GET / PUT 站名
 │       │   └── refresh-stars.js # POST 手动刷新 Star
 │       └── cron/
@@ -52,19 +54,21 @@ cloudflare/
 │   ├── settings.json        # { siteName }
 │   ├── apps.json            # 17 个应用全字段
 │   ├── airports.json        # []（机场初始为空）
+│   ├── vps.json           # 10 家 VPS 商家全字段
 │   └── star_history.json    # {"2026-11-24": {slug: stars}}（12 个有仓库的应用）
 └── scripts/
     ├── build-seed.mjs       # 从导出的 JSON 重新生成 seed/
     └── seed.sh              # 把 seed/ 写进 KV（wrangler kv key put）
 ```
 
-## 数据层（Workers KV，一个命名空间，四个 key）
+## 数据层（Workers KV，一个命名空间，五个 key）
 
 | key | 内容 |
 |---|---|
 | `settings` | `{ siteName }` |
 | `apps` | 应用数组（字段与导出 JSON 一致；Star 相关字段由刷新任务维护，后台不手改） |
 | `airports` | 机场数组（初始为空；前台无数据时隐藏栏目） |
+| `vps` | VPS 商家数组（初始 10 家；前台无数据时隐藏栏目） |
 | `star_history` | `{ "YYYY-MM-DD": { slug: stars } }` 每日快照 |
 
 绑定名：`SITE_DATA`。KV 是最终一致的：后台改完数据，前台可能有几秒延迟，属正常现象。
@@ -132,7 +136,7 @@ Cloudflare 控制台 → Workers & Pages → Create → Pages → Connect to Git
 
 ```bash
 bash scripts/seed.sh
-# 依次写入 settings / apps / airports / star_history 四个 key
+# 依次写入 settings / apps / airports / vps / star_history 五个 key
 ```
 
 ### 5. 设置 Secrets（两个，绝不能写进代码或仓库）

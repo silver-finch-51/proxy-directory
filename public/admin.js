@@ -77,7 +77,7 @@ document.querySelectorAll(".tabs [data-tab]").forEach((btn) => {
   btn.addEventListener("click", () => {
     document.querySelectorAll(".tabs [data-tab]").forEach((b) => b.classList.remove("active"));
     btn.classList.add("active");
-    for (const name of ["apps", "airports", "settings"]) {
+    for (const name of ["apps", "airports", "vps", "settings"]) {
       $("#tab-" + name).hidden = name !== btn.dataset.tab;
     }
   });
@@ -202,6 +202,7 @@ let airports = [];
 const AIRPORT_FIELDS = [
   ["name", "名称", "text", true],
   ["officialUrl", "官网链接", "url", false],
+  ["iconUrl", "图标 URL（留空则不显示图标）", "url", false],
   ["price", "价格（如 ¥12/月 · 100GB）", "text", false],
   ["traffic", "流量（如 100GB/月）", "text", false],
   ["nodes", "节点（如 香港/日本/美国）", "text", false],
@@ -290,6 +291,108 @@ async function loadAirports() {
   renderAirports();
 }
 
+// ---------- vps ----------
+let vpsList = [];
+
+const TIER_LABEL = { cheap: "便宜", mid: "中等", premium: "高端" };
+
+const VPS_FIELDS = [
+  ["name", "名称", "text", true],
+  ["officialUrl", "官网链接", "url", false],
+  ["tier", "档位（cheap 便宜 / mid 中等 / premium 高端）", "text", false],
+  ["price", "价格（如 $5/月起）", "text", false],
+  ["cpu", "CPU（如 1核）", "text", false],
+  ["memory", "内存（如 1GB）", "text", false],
+  ["disk", "硬盘（如 25GB SSD）", "text", false],
+  ["bandwidth", "流量（如 1TB/月）", "text", false],
+  ["locations", "机房（如 洛杉矶、东京、新加坡）", "text", false],
+  ["notes", "备注", "textarea", false],
+  ["iconUrl", "图标 URL（留空则不显示图标）", "url", false],
+  ["sortOrder", "排序（数字越小越靠前）", "number", false],
+];
+
+function vpsFormHtml(v) {
+  const val = (k) => (v ? v[k] ?? "" : "");
+  return `<form id="vpsForm" class="stacked">
+    ${VPS_FIELDS.map(([key, label, type]) => {
+      if (type === "textarea") {
+        return `<label>${esc(label)}<textarea name="${key}" rows="3">${esc(val(key))}</textarea></label>`;
+      }
+      return `<label>${esc(label)}<input name="${key}" type="${type}" value="${esc(val(key))}"></label>`;
+    }).join("")}
+    <div class="row">
+      <label><input name="recommended" type="checkbox" ${v && v.recommended ? "checked" : ""}> 推荐</label>
+      <label><input name="offline" type="checkbox" ${v && v.offline ? "checked" : ""}> 下架</label>
+    </div>
+    <div>
+      <button type="submit">${v ? "保存修改" : "创建 VPS"}</button>
+      <button type="button" class="secondary" id="cancelVpsForm">取消</button>
+    </div>
+  </form>`;
+}
+
+function renderVps() {
+  const tbody = $("#vpsTable tbody");
+  tbody.innerHTML = vpsList.map((v) => `<tr>
+    <td><strong>${esc(v.name)}</strong>${v.recommended ? " ★" : ""}</td>
+    <td>${esc(v.price || "—")}</td>
+    <td>${esc(TIER_LABEL[v.tier] || v.tier || "—")}</td>
+    <td>${v.sortOrder ?? 0}</td>
+    <td>${v.offline ? "下架" : "上架"}</td>
+    <td>
+      <button class="secondary" data-edit-vps="${esc(v.id)}">编辑</button>
+      <button class="danger" data-del-vps="${esc(v.id)}">删除</button>
+    </td>
+  </tr>`).join("");
+  tbody.querySelectorAll("[data-edit-vps]").forEach((b) =>
+    b.addEventListener("click", () => openVpsForm(vpsList.find((x) => x.id === b.dataset.editVps))));
+  tbody.querySelectorAll("[data-del-vps]").forEach((b) =>
+    b.addEventListener("click", async () => {
+      if (!confirm("确定删除这个 VPS 吗？")) return;
+      try {
+        await api("/api/admin/vps/" + encodeURIComponent(b.dataset.delVps), { method: "DELETE" });
+        showMsg("已删除。");
+        await loadVps();
+      } catch (err) { showMsg(err.message, true); }
+    }));
+}
+
+function openVpsForm(v) {
+  const wrap = $("#vpsFormWrap");
+  wrap.innerHTML = vpsFormHtml(v || null);
+  const form = $("#vpsForm");
+  $("#cancelVpsForm").addEventListener("click", () => { wrap.innerHTML = ""; });
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const fd = new FormData(form);
+    const body = {};
+    for (const [key] of VPS_FIELDS) body[key] = fd.get(key) ?? "";
+    if (body.sortOrder !== "") body.sortOrder = Number(body.sortOrder);
+    body.recommended = fd.get("recommended") === "on";
+    body.offline = fd.get("offline") === "on";
+    try {
+      if (v) {
+        await api("/api/admin/vps/" + encodeURIComponent(v.id), { method: "PUT", body });
+        showMsg("已保存。");
+      } else {
+        await api("/api/admin/vps", { method: "POST", body });
+        showMsg("已创建。");
+      }
+      wrap.innerHTML = "";
+      await loadVps();
+    } catch (err) { showMsg(err.message, true); }
+  });
+  form.scrollIntoView({ behavior: "smooth" });
+}
+
+$("#newVpsBtn").addEventListener("click", () => openVpsForm(null));
+
+async function loadVps() {
+  const data = await api("/api/admin/vps");
+  vpsList = data.vps || [];
+  renderVps();
+}
+
 // ---------- settings ----------
 $("#settingsForm").addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -324,6 +427,7 @@ async function loadAll() {
   try {
     await loadApps();
     await loadAirports();
+    await loadVps();
     const { settings } = await api("/api/admin/settings");
     $("#siteNameInput").value = settings.siteName || "";
     $("#siteName").textContent = settings.siteName || "代理客户端大全";
