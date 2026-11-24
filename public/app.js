@@ -63,6 +63,8 @@ function cardHtml(app) {
     : "";
   const stores = storeLine(app);
   return `<article class="card">
+    ${app.iconUrl ? `<img class="card-icon" src="${esc(app.iconUrl)}" alt="" loading="lazy" onerror="this.remove()">` : ""}
+    <div class="card-body">
     <h3><a href="/app.html?slug=${esc(app.slug)}">${esc(app.name)}</a>` +
     (app.alias ? ` <span class="alias">${esc(app.alias)}</span>` : "") + `</h3>` +
     (app.tag ? `<p class="tag">${esc(app.tag)}</p>` : "") +
@@ -71,6 +73,11 @@ function cardHtml(app) {
     (stores ? `<p class="stores">${esc(stores)}</p>` : "") +
     `<p class="meta">${app.latestVersion ? "版本 " + esc(app.latestVersion) + " · " : ""}${esc(priceLabel(app))} · ${esc((app.platforms || []).join(" / "))}</p>` +
     `<div class="chips">${(app.platforms || []).map((p) => `<span class="chip">${esc(p)}</span>`).join("")}</div>
+    </div>
+    <div class="card-side">
+      ${app.downloadUrl ? `<a class="dl-btn" href="${esc(app.downloadUrl)}" target="_blank" rel="noopener">${esc(app.downloadLabel || "下载")}</a>` : ""}
+      <span class="price">${app.priceStatus === "paid" ? esc(priceLabel(app)) : "全功能免费"}</span>
+    </div>
   </article>`;
 }
 

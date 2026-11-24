@@ -106,6 +106,7 @@ const APP_FIELDS = [
   ["latestVersion", "最新版本", "text", false],
   ["lastUpdated", "最近更新（日期）", "date", false],
   ["githubRepo", "GitHub 仓库（owner/repo，无仓库留空）", "text", false],
+  ["iconUrl", "图标 URL（留空则不显示图标）", "url", false],
 ];
 
 function appFormHtml(app) {

@@ -65,6 +65,7 @@ export function normalizeApp(input, existing) {
     latestVersion: toStringOrNull(input.latestVersion),
     lastUpdated: toStringOrNull(input.lastUpdated),
     githubRepo: toStringOrNull(input.githubRepo),
+    iconUrl: toStringOrNull(input.iconUrl),
     published: toBool(input.published, true),
     // Managed by the star refresh, never by hand:
     stars: base.stars ?? null,
