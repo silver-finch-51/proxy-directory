@@ -1,0 +1,1 @@
+{"name":"proxy-directory","private":true,"scripts":{"seed":"node scripts/build-seed.mjs"},"type":"module"}

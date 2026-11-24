@@ -1,0 +1,21 @@
+name = "proxy-directory"
+compatibility_date = "2026-11-24"
+pages_build_output_dir = "public"
+
+# Workers KV namespace for all site data (one namespace, four keys):
+#   settings     -> { siteName }
+#   apps         -> [ app, ... ]
+#   airports     -> [ airport, ... ]   (starts empty)
+#   star_history -> { "YYYY-MM-DD": { slug: stars } }
+#
+# Create it first, then paste the returned id below:
+#   wrangler kv namespace create SITE_DATA
+[[kv_namespaces]]
+binding = "SITE_DATA"
+id = "PASTE_KV_NAMESPACE_ID_HERE"
+
+# Secrets (NEVER put them in this file). Set them with:
+#   wrangler pages secret put ADMIN_PASSWORD   # admin login password
+#   wrangler pages secret put CRON_SECRET      # shared with worker-cron
+# or in the dashboard: Workers & Pages > proxy-directory > Settings >
+# Variables and Secrets.

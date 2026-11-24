@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>管理后台 · 代理客户端大全</title>
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a class="brand" href="/"><span id="siteName">代理客户端大全</span></a>
+    <nav>
+      <a href="/#apps">应用目录</a>
+      <a href="/admin.html">管理后台</a>
+    </nav>
+  </div>
+</header>
+<main class="wrap">
+  <h1>管理后台</h1>
+
+  <section id="loginBox">
+    <form id="loginForm" class="stacked">
+      <label>用户名
+        <input name="username" type="text" value="admin" autocomplete="username">
+      </label>
+      <label>密码
+        <input name="password" type="password" autocomplete="current-password">
+      </label>
+      <div><button type="submit">登录</button></div>
+      <p id="loginErr" class="error" hidden></p>
+    </form>
+  </section>
+
+  <section id="adminBox" hidden>
+    <div class="tabs">
+      <button data-tab="apps" class="active">应用</button>
+      <button data-tab="airports">机场</button>
+      <button data-tab="settings">站点设置</button>
+      <span class="spacer"></span>
+      <button id="refreshStarsBtn" class="secondary">刷新 Star</button>
+      <button id="logoutBtn" class="secondary">退出登录</button>
+    </div>
+    <p id="adminMsg" class="muted"></p>
+
+    <div id="tab-apps" class="tab-panel">
+      <button id="newAppBtn">＋ 新增应用</button>
+      <div id="appFormWrap"></div>
+      <table id="appTable">
+        <thead><tr>
+          <th>应用</th><th>平台</th><th>Star</th><th>状态</th><th>操作</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div id="tab-airports" class="tab-panel" hidden>
+      <button id="newAirportBtn">＋ 新增机场</button>
+      <div id="airportFormWrap"></div>
+      <table id="airportTable">
+        <thead><tr>
+          <th>机场</th><th>价格</th><th>排序</th><th>状态</th><th>操作</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div id="tab-settings" class="tab-panel" hidden>
+      <form id="settingsForm" class="stacked">
+        <label>站名
+          <input id="siteNameInput" type="text">
+        </label>
+        <div><button type="submit">保存站名</button></div>
+      </form>
+    </div>
+  </section>
+</main>
+<script src="/admin.js"></script>
+</body>
+</html>

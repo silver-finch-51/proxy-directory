@@ -1,0 +1,14 @@
+name = "proxy-directory-cron"
+main = "worker.js"
+compatibility_date = "2026-11-24"
+
+# Daily at 00:00 UTC = 08:00 Beijing time.
+[triggers]
+crons = ["0 0 * * *"]
+
+[vars]
+SITE_URL = "https://xiaoxin.loc.cc"
+
+# CRON_SECRET is a secret, not a var. Set it with:
+#   wrangler secret put CRON_SECRET
+# It must be the SAME value as the CRON_SECRET secret on the Pages project.

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>代理客户端大全</title>
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a class="brand" href="/"><span id="siteName">代理客户端大全</span></a>
+    <nav>
+      <a href="/#apps">应用目录</a>
+      <a href="/#airports" id="navAirports" hidden>机场</a>
+      <a href="/admin.html">管理后台</a>
+    </nav>
+  </div>
+</header>
+<main class="wrap">
+  <section id="apps">
+    <h1>应用目录</h1>
+    <p class="intro">收录主流代理客户端的官方下载链接。价格以官网为准。</p>
+    <div class="toolbar">
+      <input id="q" type="search" placeholder="搜索应用名称、别名、介绍…" aria-label="搜索">
+      <select id="fPlatform" aria-label="平台"><option value="">全部平台</option></select>
+      <select id="fCore" aria-label="内核"><option value="">全部内核</option></select>
+      <select id="fPrice" aria-label="费用">
+        <option value="">免费 / 付费</option>
+        <option value="free">免费</option>
+        <option value="paid">付费</option>
+      </select>
+      <select id="fOpen" aria-label="开源">
+        <option value="">开源 / 闭源</option>
+        <option value="open">开源</option>
+        <option value="closed">闭源</option>
+      </select>
+      <select id="fSort" aria-label="排序">
+        <option value="default">综合排序</option>
+        <option value="stars">Star 数</option>
+        <option value="hot7d">7 日热度</option>
+        <option value="updated">最近更新</option>
+      </select>
+    </div>
+    <p id="resultCount" class="muted"></p>
+    <div id="appGrid" class="grid"></div>
+    <p id="emptyMsg" class="muted" hidden>没有符合条件的应用。</p>
+  </section>
+  <section id="airports" hidden>
+    <h2>机场</h2>
+    <p class="muted">价格与套餐以官网为准。</p>
+    <div id="airportList" class="airport-list"></div>
+  </section>
+</main>
+<footer class="wrap muted">
+  <p>Star 数每天早上自动从 GitHub 刷新；商店评分数来自公开商店页面快照。本站仅收录官方下载链接，不含任何邀请码或推广链接。</p>
+</footer>
+<script src="/app.js"></script>
+</body>
+</html>
