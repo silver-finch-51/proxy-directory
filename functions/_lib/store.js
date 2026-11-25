@@ -1,9 +1,12 @@
-// KV helpers. One namespace (SITE_DATA) with five keys:
+// KV helpers. One namespace (SITE_DATA) with seven keys:
 //   settings     -> { siteName: string }
 //   apps         -> [ app, ... ]          (full app records, see seed/apps.json)
 //   airports     -> [ airport, ... ]      (starts empty)
 //   vps          -> [ vps, ... ]          (starts with 10 seeded providers)
 //   star_history -> { "YYYY-MM-DD": { slug: stars } }  (daily GitHub star snapshots)
+//   users        -> [ user, ... ]         (registered visitor accounts)
+//   sessions     -> { token: session }    (login sessions, see _lib/session.js)
+//   tutorials    -> [ tutorial, ... ]     (how-to guides, see seed/tutorials.json)
 
 export async function loadSettings(env) {
   const raw = await env.SITE_DATA.get("settings", "json");
@@ -46,10 +49,34 @@ export async function saveHistory(env, history) {
   await env.SITE_DATA.put("star_history", JSON.stringify(history));
 }
 
-export function jsonResponse(data, status = 200) {
+export async function loadUsers(env) {
+  return (await env.SITE_DATA.get("users", "json")) || [];
+}
+
+export async function saveUsers(env, users) {
+  await env.SITE_DATA.put("users", JSON.stringify(users));
+}
+
+export async function loadSessions(env) {
+  return (await env.SITE_DATA.get("sessions", "json")) || {};
+}
+
+export async function saveSessions(env, sessions) {
+  await env.SITE_DATA.put("sessions", JSON.stringify(sessions));
+}
+
+export async function loadTutorials(env) {
+  return (await env.SITE_DATA.get("tutorials", "json")) || [];
+}
+
+export async function saveTutorials(env, tutorials) {
+  await env.SITE_DATA.put("tutorials", JSON.stringify(tutorials));
+}
+
+export function jsonResponse(data, status = 200, extraHeaders = {}) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { "content-type": "application/json; charset=utf-8" },
+    headers: { "content-type": "application/json; charset=utf-8", ...extraHeaders },
   });
 }
 

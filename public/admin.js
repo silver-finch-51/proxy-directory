@@ -1,9 +1,9 @@
 // Admin panel: login (admin + ADMIN_PASSWORD), then CRUD for apps and
-// airports, site-name settings, and manual star refresh.
-// Token is stored in localStorage and sent as Authorization: Bearer.
+// airports, site-name settings, manual star refresh, and a read-only user list.
+// Auth is a KV-backed session via HttpOnly cookie (see /api/auth/me);
+// the admin page only accepts sessions with role "admin".
 
 const $ = (s, el = document) => el.querySelector(s);
-const TOKEN_KEY = "admin_token";
 
 function esc(s) {
   return String(s ?? "")
@@ -11,17 +11,11 @@ function esc(s) {
     .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
 
-function getToken() { return localStorage.getItem(TOKEN_KEY); }
-function setToken(t) { localStorage.setItem(TOKEN_KEY, t); }
-function clearToken() { localStorage.removeItem(TOKEN_KEY); }
-
 async function api(path, { method = "GET", body = undefined } = {}) {
   const res = await fetch(path, {
     method,
-    headers: {
-      "content-type": "application/json",
-      ...(getToken() ? { authorization: "Bearer " + getToken() } : {}),
-    },
+    credentials: "same-origin",
+    headers: { "content-type": "application/json" },
     body: body === undefined ? undefined : JSON.stringify(body),
   });
   const data = await res.json().catch(() => ({}));
@@ -43,7 +37,6 @@ function showMsg(text, isError = false) {
 function showLogin() {
   $("#loginBox").hidden = false;
   $("#adminBox").hidden = true;
-  clearToken();
 }
 
 function showAdmin() {
@@ -57,11 +50,10 @@ $("#loginForm").addEventListener("submit", async (e) => {
   const errEl = $("#loginErr");
   errEl.hidden = true;
   try {
-    const data = await api("/api/admin/login", {
+    await api("/api/admin/login", {
       method: "POST",
       body: { username: fd.get("username"), password: fd.get("password") },
     });
-    setToken(data.token);
     showAdmin();
     await loadAll();
   } catch (err) {
@@ -70,14 +62,17 @@ $("#loginForm").addEventListener("submit", async (e) => {
   }
 });
 
-$("#logoutBtn").addEventListener("click", showLogin);
+$("#logoutBtn").addEventListener("click", async () => {
+  try { await api("/api/auth/logout", { method: "POST" }); } catch { /* already logged out */ }
+  showLogin();
+});
 
 // ---------- tabs ----------
 document.querySelectorAll(".tabs [data-tab]").forEach((btn) => {
   btn.addEventListener("click", () => {
     document.querySelectorAll(".tabs [data-tab]").forEach((b) => b.classList.remove("active"));
     btn.classList.add("active");
-    for (const name of ["apps", "airports", "vps", "settings"]) {
+    for (const name of ["apps", "airports", "vps", "tutorials", "settings", "users"]) {
       $("#tab-" + name).hidden = name !== btn.dataset.tab;
     }
   });
@@ -393,6 +388,112 @@ async function loadVps() {
   renderVps();
 }
 
+// ---------- tutorials ----------
+let tutorials = [];
+
+const TUTORIAL_FIELDS = [
+  ["title", "标题", "text", true],
+  ["intro", "一句话简介", "text", false],
+  ["body", "正文（段落之间空一行）", "textarea", false],
+  ["sortOrder", "排序（数字越小越靠前）", "number", false],
+];
+
+function tutorialFormHtml(t) {
+  const v = (k) => (t ? t[k] ?? "" : "");
+  return `<form id="tutorialForm" class="stacked">
+    ${TUTORIAL_FIELDS.map(([key, label, type]) => {
+      if (type === "textarea") {
+        return `<label>${esc(label)}<textarea name="${key}" rows="8">${esc(v(key))}</textarea></label>`;
+      }
+      return `<label>${esc(label)}<input name="${key}" type="${type}" value="${esc(v(key))}"></label>`;
+    }).join("")}
+    <div class="row">
+      <label><input name="offline" type="checkbox" ${t && t.offline ? "checked" : ""}> 下架</label>
+    </div>
+    <div>
+      <button type="submit">${t ? "保存修改" : "创建教程"}</button>
+      <button type="button" class="secondary" id="cancelTutorialForm">取消</button>
+    </div>
+  </form>`;
+}
+
+function renderTutorials() {
+  const tbody = $("#tutorialTable tbody");
+  tbody.innerHTML = tutorials.map((t) => `<tr>
+    <td><strong>${esc(t.title)}</strong></td>
+    <td>${t.sortOrder ?? 0}</td>
+    <td>${t.offline ? "下架" : "上架"}</td>
+    <td>
+      <button class="secondary" data-edit-tut="${esc(t.id)}">编辑</button>
+      <button class="danger" data-del-tut="${esc(t.id)}">删除</button>
+    </td>
+  </tr>`).join("");
+  tbody.querySelectorAll("[data-edit-tut]").forEach((b) =>
+    b.addEventListener("click", () => openTutorialForm(tutorials.find((x) => x.id === b.dataset.editTut))));
+  tbody.querySelectorAll("[data-del-tut]").forEach((b) =>
+    b.addEventListener("click", async () => {
+      if (!confirm("确定删除这篇教程吗？")) return;
+      try {
+        await api("/api/admin/tutorials/" + encodeURIComponent(b.dataset.delTut), { method: "DELETE" });
+        showMsg("已删除。");
+        await loadTutorials();
+      } catch (err) { showMsg(err.message, true); }
+    }));
+}
+
+function openTutorialForm(t) {
+  const wrap = $("#tutorialFormWrap");
+  wrap.innerHTML = tutorialFormHtml(t || null);
+  const form = $("#tutorialForm");
+  $("#cancelTutorialForm").addEventListener("click", () => { wrap.innerHTML = ""; });
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const fd = new FormData(form);
+    const body = {};
+    for (const [key] of TUTORIAL_FIELDS) body[key] = fd.get(key) ?? "";
+    if (body.sortOrder !== "") body.sortOrder = Number(body.sortOrder);
+    body.offline = fd.get("offline") === "on";
+    try {
+      if (t) {
+        await api("/api/admin/tutorials/" + encodeURIComponent(t.id), { method: "PUT", body });
+        showMsg("已保存。");
+      } else {
+        await api("/api/admin/tutorials", { method: "POST", body });
+        showMsg("已创建。");
+      }
+      wrap.innerHTML = "";
+      await loadTutorials();
+    } catch (err) { showMsg(err.message, true); }
+  });
+  form.scrollIntoView({ behavior: "smooth" });
+}
+
+$("#newTutorialBtn").addEventListener("click", () => openTutorialForm(null));
+
+async function loadTutorials() {
+  const data = await api("/api/admin/tutorials");
+  tutorials = data.tutorials || [];
+  renderTutorials();
+}
+
+// ---------- users (read-only) ----------
+function renderUsers(users) {
+  const tbody = $("#userTable tbody");
+  if (!users || users.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="2" class="muted">暂无注册用户。</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = users.map((u) => `<tr>
+    <td><strong>${esc(u.username)}</strong></td>
+    <td>${u.createdAt ? esc(new Date(u.createdAt).toLocaleString("zh-CN")) : "—"}</td>
+  </tr>`).join("");
+}
+
+async function loadUsers() {
+  const data = await api("/api/admin/users");
+  renderUsers(data.users || []);
+}
+
 // ---------- settings ----------
 $("#settingsForm").addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -428,16 +529,28 @@ async function loadAll() {
     await loadApps();
     await loadAirports();
     await loadVps();
+    await loadTutorials();
+    await loadUsers();
     const { settings } = await api("/api/admin/settings");
     $("#siteNameInput").value = settings.siteName || "";
     $("#siteName").textContent = settings.siteName || "代理客户端大全";
   } catch (err) {
-    if (err.status === 401) showLogin();
+    if (err.status === 401 || err.status === 403) showLogin();
     else showMsg(err.message, true);
   }
 }
 
-if (getToken()) {
-  showAdmin();
-  loadAll();
-}
+// Only admin sessions may see this page; regular users get the login box.
+(async () => {
+  try {
+    const me = await api("/api/auth/me");
+    if (me.loggedIn && me.role === "admin") {
+      showAdmin();
+      await loadAll();
+    } else {
+      showLogin();
+    }
+  } catch {
+    showLogin();
+  }
+})();

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>我的 · 代理客户端大全</title>
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a class="brand" href="/"><span class="brand-mark">代</span><span id="siteName">代理客户端大全</span></a>
+    <div class="header-auth push-right" id="headerAuth"></div>
+  </div>
+</header>
+<main class="wrap">
+  <div class="my-menu">
+    <a href="/#tutorials">教程<span class="my-menu-sub">选客户端、导入订阅、排障、测速</span></a>
+  </div>
+
+  <div class="auth-card" id="authView" hidden>
+    <h1 id="authTitle">登录</h1>
+    <div class="auth-tabs" role="group" aria-label="登录或注册">
+      <button type="button" id="tabLogin" class="active">登录</button>
+      <button type="button" id="tabRegister">注册</button>
+    </div>
+    <form id="authForm" class="stacked">
+      <label>用户名
+        <input name="username" type="text" autocomplete="username" required>
+      </label>
+      <label>密码
+        <input name="password" type="password" autocomplete="current-password" required>
+      </label>
+      <p id="authHint" class="muted">登录已有账号。</p>
+      <div><button type="submit" id="authSubmit">登录</button></div>
+      <p id="authErr" class="error" hidden></p>
+    </form>
+  </div>
+
+  <div class="account-card" id="accountView" hidden>
+    <h1>我的账号</h1>
+    <dl class="account-info">
+      <div><dt>用户名</dt><dd id="accName">—</dd></div>
+      <div><dt>角色</dt><dd id="accRole">—</dd></div>
+      <div><dt>注册时间</dt><dd id="accCreated">—</dd></div>
+    </dl>
+    <p id="adminEntry" hidden><a class="admin-entry-btn" href="/admin.html">进入管理后台</a></p>
+
+    <div id="pwBox">
+      <h2>修改密码</h2>
+      <form id="pwForm" class="stacked">
+        <label>当前密码
+          <input name="currentPassword" type="password" autocomplete="current-password" required>
+        </label>
+        <label>新密码（至少 6 位）
+          <input name="newPassword" type="password" autocomplete="new-password" required>
+        </label>
+        <div><button type="submit">修改密码</button></div>
+        <p id="pwMsg" class="muted" hidden></p>
+      </form>
+    </div>
+
+    <div class="account-actions">
+      <button type="button" class="secondary" id="logoutBtn">退出登录</button>
+      <button type="button" class="danger" id="deleteBtn">注销账号</button>
+    </div>
+    <p id="accMsg" class="muted" hidden></p>
+  </div>
+</main>
+<footer class="wrap site-footer">
+  <p>本站仅收录官方下载链接，不含任何邀请码或推广链接。</p>
+</footer>
+<script src="/header-auth.js"></script>
+<script src="/my.js"></script>
+</body>
+</html>

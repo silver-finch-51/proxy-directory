@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>登录 / 注册 · 代理客户端大全</title>
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a class="brand" href="/"><span class="brand-mark">代</span><span id="siteName">代理客户端大全</span></a>
+  </div>
+</header>
+<main class="wrap">
+  <div class="auth-card">
+    <h1 id="authTitle">登录</h1>
+    <div class="auth-tabs" role="group" aria-label="登录或注册">
+      <button type="button" id="tabLogin" class="active">登录</button>
+      <button type="button" id="tabRegister">注册</button>
+    </div>
+    <form id="authForm" class="stacked">
+      <label>用户名
+        <input name="username" type="text" autocomplete="username" required>
+      </label>
+      <label>密码
+        <input name="password" type="password" autocomplete="current-password" required>
+      </label>
+      <p id="authHint" class="muted">登录已有账号。</p>
+      <div><button type="submit" id="authSubmit">登录</button></div>
+      <p id="authErr" class="error" hidden></p>
+    </form>
+    <div id="authedBox" hidden>
+      <p>已登录为 <strong id="authedName"></strong></p>
+      <p><a href="/">返回首页</a> · <button type="button" class="secondary" id="authLogout">退出登录</button></p>
+    </div>
+  </div>
+</main>
+<footer class="wrap site-footer">
+  <p>本站仅收录官方下载链接，不含任何邀请码或推广链接。</p>
+</footer>
+<script src="/auth.js"></script>
+</body>
+</html>

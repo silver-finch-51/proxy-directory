@@ -33,7 +33,9 @@
       <button data-tab="apps" class="active">应用</button>
       <button data-tab="airports">机场</button>
       <button data-tab="vps">VPS</button>
+      <button data-tab="tutorials">教程</button>
       <button data-tab="settings">站点设置</button>
+      <button data-tab="users">用户</button>
       <span class="spacer"></span>
       <button id="refreshStarsBtn" class="secondary">刷新 Star</button>
       <button id="logoutBtn" class="secondary">退出登录</button>
@@ -81,12 +83,34 @@
         <div><button type="submit">保存站名</button></div>
       </form>
     </div>
+
+    <div id="tab-users" class="tab-panel" hidden>
+      <p class="muted">注册用户列表（只读）。</p>
+      <table id="userTable">
+        <thead><tr>
+          <th>用户名</th><th>注册时间</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div id="tab-tutorials" class="tab-panel" hidden>
+      <button id="newTutorialBtn">＋ 新增教程</button>
+      <div id="tutorialFormWrap"></div>
+      <table id="tutorialTable">
+        <thead><tr>
+          <th>标题</th><th>排序</th><th>状态</th><th>操作</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
   </section>
 </main>
 <script src="/admin.js"></script>
 <nav class="bottom-nav" aria-label="主要栏目">
-  <a href="/#apps">应用目录</a>
-  <a href="/admin.html" aria-current="page">管理后台</a>
+  <a href="/#apps"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg><span>软件</span></a>
+  <a href="/#airports"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="22 2 11 13"></polygon><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg><span>机场</span></a>
+  <a href="/my.html"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg><span>我的</span></a>
 </nav>
 </body>
 </html>

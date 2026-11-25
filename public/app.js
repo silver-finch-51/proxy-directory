@@ -206,14 +206,11 @@ function monthlyPrice(v) {
 
 function renderVps() {
   const section = $("#vps");
-  const nav = $("#navVps");
   if (!allVps || allVps.length === 0) {
     section.hidden = true;
-    nav.hidden = true;
     return;
   }
   section.hidden = false;
-  nav.hidden = false;
   let list = allVps.filter((v) => !vpsTier || v.tier === vpsTier);
   if (vpsSort === "price") {
     list = [...list].sort((a, b) => {
@@ -239,6 +236,35 @@ function renderVps() {
       <span class="price">${esc(v.price || "")}</span>
     </div>
   </article>`).join("");
+}
+
+function renderTutorials(tutorials) {
+  const section = $("#tutorials");
+  const list = $("#tutorialList");
+  if (!tutorials || tutorials.length === 0) {
+    section.hidden = true;
+    return;
+  }
+  section.hidden = false;
+  list.innerHTML = tutorials.map((t) => {
+    const paras = String(t.body || "").split(/\n+/).filter(Boolean)
+      .map((p) => `<p>${esc(p)}</p>`).join("");
+    return `<article class="tutorial">
+      <h3>${esc(t.title)}</h3>
+      ${t.intro ? `<p class="t-intro">${esc(t.intro)}</p>` : ""}
+      <div class="t-body" hidden>${paras}</div>
+      <button type="button" class="t-toggle">阅读全文</button>
+    </article>`;
+  }).join("");
+  list.querySelectorAll(".tutorial").forEach((el) => {
+    const btn = el.querySelector(".t-toggle");
+    const body = el.querySelector(".t-body");
+    btn.addEventListener("click", () => {
+      const opening = body.hidden;
+      body.hidden = !opening;
+      btn.textContent = opening ? "收起" : "阅读全文";
+    });
+  });
 }
 
 function bindVpsControls() {
@@ -306,6 +332,7 @@ async function init() {
   applyFilters();
   renderAirports(data.airports || []);
   renderVps();
+  renderTutorials(data.tutorials || []);
   $("#q").addEventListener("input", () => {
     filters.q = $("#q").value.trim().toLowerCase();
     applyFilters();

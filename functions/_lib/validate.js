@@ -92,6 +92,7 @@ export function normalizeAirport(input, existing) {
     traffic: toStringOrNull(input.traffic),
     nodes: toStringOrNull(input.nodes),
     notes: toStringOrNull(input.notes),
+    tier: ["cheap", "mid", "premium"].includes(input.tier) ? input.tier : (base.tier || null),
     sortOrder: toNumberOrNull(input.sortOrder) ?? 0,
     recommended: toBool(input.recommended, false),
     offline: toBool(input.offline, false),
@@ -135,6 +136,28 @@ export function newVpsId() {
 export function newAirportId() {
   return (
     "apt-" +
+    Date.now().toString(36) +
+    "-" +
+    Math.random().toString(36).slice(2, 8)
+  );
+}
+
+// Normalize a tutorial record coming from the admin form / API.
+export function normalizeTutorial(input, existing) {
+  const base = existing || {};
+  return {
+    id: base.id || null,
+    title: toStringOrNull(input.title) || base.title || "",
+    intro: toStringOrNull(input.intro),
+    body: toStringOrNull(input.body) || "",
+    sortOrder: toNumberOrNull(input.sortOrder) ?? 0,
+    offline: toBool(input.offline, false),
+  };
+}
+
+export function newTutorialId() {
+  return (
+    "tut-" +
     Date.now().toString(36) +
     "-" +
     Math.random().toString(36).slice(2, 8)
