@@ -1,5 +1,5 @@
-// Public index page: app directory with search / filters / sorting,
-// plus the airports section (hidden when there are no airports).
+// Public index page: app directory with search / chip filters / sorting,
+// plus the airports section (hidden when there are no airports) and VPS.
 
 const $ = (s, el = document) => el.querySelector(s);
 
@@ -27,53 +27,51 @@ function priceLabel(app) {
   return "免费";
 }
 
-function storeLine(app) {
+function ratingTotal(app) {
+  return (app.appStoreRatingCount || 0) + (app.googlePlayRatingCount || 0);
+}
+
+function ratingChange7d(app) {
+  if (app.appStoreChange7d !== null && app.appStoreChange7d !== undefined) return app.appStoreChange7d;
+  if (app.googlePlayChange7d !== null && app.googlePlayChange7d !== undefined) return app.googlePlayChange7d;
+  return null;
+}
+
+function statsLine(app) {
   const parts = [];
-  if (app.appStoreRatingCount) {
-    parts.push(
-      "App Store 评分 " + fmtNum(app.appStoreRatingCount) +
-      (app.appStoreChange7d !== null && app.appStoreChange7d !== undefined
-        ? " · 近7日 " + fmtDelta(app.appStoreChange7d)
-        : ""),
-    );
+  if (app.stars !== null && app.stars !== undefined) {
+    if (app.stars7d !== null && app.stars7d !== undefined) parts.push("7日 " + fmtDelta(app.stars7d));
+    if (app.stars30dPct !== null && app.stars30dPct !== undefined) {
+      parts.push("30日 " + (app.stars30dPct >= 0 ? "+" : "") + app.stars30dPct.toFixed(1) + "%");
+    }
+    parts.push("Star " + fmtNum(app.stars));
   }
-  if (app.googlePlayRatingCount) {
-    parts.push(
-      "Google Play 评分 " + fmtNum(app.googlePlayRatingCount) +
-      (app.googlePlayChange7d !== null && app.googlePlayChange7d !== undefined
-        ? " · 近7日 " + fmtDelta(app.googlePlayChange7d)
-        : ""),
-    );
+  const total = ratingTotal(app);
+  if (total > 0) {
+    let r = "评分数 " + fmtNum(total);
+    const ch = ratingChange7d(app);
+    if (ch !== null) r += " · 7日变化 " + fmtDelta(ch);
+    parts.push(r);
   }
-  return parts.join("；");
+  return parts.join(" · ");
 }
 
 function cardHtml(app) {
-  const starLine = app.stars !== null && app.stars !== undefined
-    ? "★ " + fmtNum(app.stars) +
-      (app.stars7d !== null && app.stars7d !== undefined
-        ? ' <span class="delta">7日 ' + fmtDelta(app.stars7d) + "</span>"
-        : "") +
-      (app.stars30d !== null && app.stars30d !== undefined
-        ? ' <span class="delta">30日 ' + fmtDelta(app.stars30d) +
-          (app.stars30dPct !== null && app.stars30dPct !== undefined
-            ? " (" + (app.stars30dPct >= 0 ? "+" : "") + app.stars30dPct.toFixed(1) + "%)"
-            : "") + "</span>"
-        : "")
-    : "";
-  const stores = storeLine(app);
+  const chips = [];
+  if (app.tag) chips.push(`<span class="chip">${esc(app.tag)}</span>`);
+  const platforms = app.platforms || [];
+  platforms.slice(0, 3).forEach((p) => chips.push(`<span class="chip">${esc(p)}</span>`));
+  if (platforms.length > 3) chips.push(`<span class="chip">+${platforms.length - 3}</span>`);
+  const stats = statsLine(app);
   return `<article class="card">
     ${app.iconUrl ? `<img class="card-icon" src="${esc(app.iconUrl)}" alt="" loading="lazy" onerror="this.remove()">` : ""}
     <div class="card-body">
     <h3><a href="/app.html?slug=${esc(app.slug)}">${esc(app.name)}</a>` +
     (app.alias ? ` <span class="alias">${esc(app.alias)}</span>` : "") + `</h3>` +
-    (app.tag ? `<p class="tag">${esc(app.tag)}</p>` : "") +
+    (chips.length ? `<div class="chips">${chips.join("")}</div>` : "") +
     `<p class="desc">${esc(app.description || "")}</p>` +
-    (starLine ? `<p class="stars">${starLine}</p>` : "") +
-    (stores ? `<p class="stores">${esc(stores)}</p>` : "") +
-    `<p class="meta">${app.latestVersion ? "版本 " + esc(app.latestVersion) + " · " : ""}${esc(priceLabel(app))} · ${esc((app.platforms || []).join(" / "))}</p>` +
-    `<div class="chips">${(app.platforms || []).map((p) => `<span class="chip">${esc(p)}</span>`).join("")}</div>
-    </div>
+    (stats ? `<p class="stats">${esc(stats)}</p>` : "") +
+    `</div>
     <div class="card-side">
       ${app.downloadUrl ? `<a class="dl-btn" href="${esc(app.downloadUrl)}" target="_blank" rel="noopener">${esc(app.downloadLabel || "下载")}</a>` : ""}
       <span class="price">${app.priceStatus === "paid" ? esc(priceLabel(app)) : "全功能免费"}</span>
@@ -82,54 +80,87 @@ function cardHtml(app) {
 }
 
 let allApps = [];
+let allVps = [];
+const filters = { q: "", platform: "", core: "", open: "", price: "", sort: "default" };
+let vpsTier = "";
+let vpsSort = "default";
 
-function currentFilters() {
-  return {
-    q: $("#q").value.trim().toLowerCase(),
-    platform: $("#fPlatform").value,
-    core: $("#fCore").value,
-    price: $("#fPrice").value,
-    open: $("#fOpen").value,
-    sort: $("#fSort").value,
-  };
+const FILTER_DEFS = {
+  platform: { label: "平台", allLabel: "全部平台", options: () => [...new Set(allApps.flatMap((a) => a.platforms || []))].sort() },
+  core: { label: "内核", allLabel: "全部内核", options: () => [...new Set(allApps.flatMap((a) => a.cores || []))].sort() },
+  open: { label: "代码", allLabel: "全部", options: () => ["open", "closed"], labels: { open: "开源", closed: "闭源" } },
+  price: { label: "价格", allLabel: "全部", options: () => ["free", "paid"], labels: { free: "免费", paid: "付费" } },
+};
+
+function closeAllPanels(except) {
+  document.querySelectorAll(".chip-filter").forEach((wrap) => {
+    if (wrap === except) return;
+    wrap.querySelector(".chip-panel").hidden = true;
+    wrap.querySelector(".chip-btn").setAttribute("aria-expanded", "false");
+  });
+}
+
+function buildFilterPanels() {
+  document.querySelectorAll(".chip-filter").forEach((wrap) => {
+    const key = wrap.dataset.filter;
+    const def = FILTER_DEFS[key];
+    const panel = wrap.querySelector(".chip-panel");
+    const btn = wrap.querySelector(".chip-btn");
+    const values = def.options();
+    const opts = [{ value: "", label: def.allLabel }]
+      .concat(values.map((v) => ({ value: v, label: (def.labels && def.labels[v]) || v })));
+    panel.innerHTML = opts.map((o) =>
+      `<button type="button" data-value="${esc(o.value)}"${o.value === filters[key] ? ' class="selected"' : ""}>${esc(o.label)}</button>`
+    ).join("");
+    panel.addEventListener("click", (ev) => {
+      const opt = ev.target.closest("button[data-value]");
+      if (!opt) return;
+      filters[key] = opt.dataset.value;
+      btn.querySelector(".chip-label").textContent =
+        opt.dataset.value === "" ? def.label : opt.textContent;
+      btn.classList.toggle("selected", opt.dataset.value !== "");
+      closeAllPanels();
+      applyFilters();
+    });
+    btn.addEventListener("click", (ev) => {
+      ev.stopPropagation();
+      const willOpen = panel.hidden;
+      closeAllPanels(wrap);
+      panel.hidden = !willOpen;
+      btn.setAttribute("aria-expanded", String(willOpen));
+    });
+  });
+  document.addEventListener("click", (ev) => {
+    if (!ev.target.closest(".chip-filter")) closeAllPanels();
+  });
+  document.addEventListener("keydown", (ev) => {
+    if (ev.key === "Escape") closeAllPanels();
+  });
 }
 
 function applyFilters() {
-  const f = currentFilters();
   let list = allApps.filter((app) => {
-    if (f.q) {
+    if (filters.q) {
       const hay = [app.name, app.alias, app.description, app.tag]
         .filter(Boolean).join(" ").toLowerCase();
-      if (!hay.includes(f.q)) return false;
+      if (!hay.includes(filters.q)) return false;
     }
-    if (f.platform && !(app.platforms || []).includes(f.platform)) return false;
-    if (f.core && !((app.cores || []).includes(f.core) || app.core === f.core)) return false;
-    if (f.price && app.priceStatus !== f.price) return false;
-    if (f.open === "open" && !app.openSource) return false;
-    if (f.open === "closed" && app.openSource) return false;
+    if (filters.platform && !(app.platforms || []).includes(filters.platform)) return false;
+    if (filters.core && !((app.cores || []).includes(filters.core) || app.core === filters.core)) return false;
+    if (filters.price && app.priceStatus !== filters.price) return false;
+    if (filters.open === "open" && !app.openSource) return false;
+    if (filters.open === "closed" && app.openSource) return false;
     return true;
   });
 
-  const byStarsDesc = (a, b) => (b.stars ?? -1) - (a.stars ?? -1);
-  if (f.sort === "stars") list = [...list].sort(byStarsDesc);
-  else if (f.sort === "hot7d") list = [...list].sort((a, b) => (b.stars7d ?? -1) - (a.stars7d ?? -1));
-  else if (f.sort === "updated") list = [...list].sort((a, b) => String(b.lastUpdated || "").localeCompare(String(a.lastUpdated || "")));
-  // "default": keep the seed order (by id).
+  if (filters.sort === "hot7d") list = [...list].sort((a, b) => (b.stars7d ?? -1) - (a.stars7d ?? -1));
+  else if (filters.sort === "updated") list = [...list].sort((a, b) => String(b.lastUpdated || "").localeCompare(String(a.lastUpdated || "")));
+  else if (filters.sort === "ratings") list = [...list].sort((a, b) => ratingTotal(b) - ratingTotal(a));
+  // "default": keep the seed order.
 
   $("#appGrid").innerHTML = list.map(cardHtml).join("");
   $("#emptyMsg").hidden = list.length > 0;
-  $("#resultCount").textContent = `共 ${list.length} 个应用`;
-}
-
-function fillFilterOptions() {
-  const platforms = [...new Set(allApps.flatMap((a) => a.platforms || []))].sort();
-  const cores = [...new Set(allApps.flatMap((a) => a.cores || []))].sort();
-  for (const p of platforms) {
-    $("#fPlatform").insertAdjacentHTML("beforeend", `<option>${esc(p)}</option>`);
-  }
-  for (const c of cores) {
-    $("#fCore").insertAdjacentHTML("beforeend", `<option>${esc(c)}</option>`);
-  }
+  $("#resultCount").innerHTML = `共 <b>${list.length}</b> 个应用`;
 }
 
 function renderAirports(airports) {
@@ -156,17 +187,37 @@ function renderAirports(airports) {
 
 const TIER_LABEL = { cheap: "便宜", mid: "中等", premium: "高端" };
 
-function renderVps(vps) {
+// " $21.99/年起 " -> ~1.83 USD/month; "$5/月起" -> 5. Currency symbol ignored.
+function monthlyPrice(v) {
+  if (!v || !v.price) return null;
+  const m = String(v.price).match(/([\d.]+)/);
+  if (!m) return null;
+  let n = parseFloat(m[1]);
+  if (/年/.test(v.price)) n = n / 12;
+  return n;
+}
+
+function renderVps() {
   const section = $("#vps");
   const nav = $("#navVps");
-  if (!vps || vps.length === 0) {
+  if (!allVps || allVps.length === 0) {
     section.hidden = true;
     nav.hidden = true;
     return;
   }
   section.hidden = false;
   nav.hidden = false;
-  $("#vpsList").innerHTML = vps.map((v) => `<article class="vps">
+  let list = allVps.filter((v) => !vpsTier || v.tier === vpsTier);
+  if (vpsSort === "price") {
+    list = [...list].sort((a, b) => {
+      const pa = monthlyPrice(a), pb = monthlyPrice(b);
+      if (pa === null && pb === null) return 0;
+      if (pa === null) return 1;
+      if (pb === null) return -1;
+      return pa - pb;
+    });
+  }
+  $("#vpsList").innerHTML = list.map((v) => `<article class="vps">
     ${v.iconUrl ? `<div class="vps-logo"><img src="${esc(v.iconUrl)}" alt="" loading="lazy" onerror="this.closest('.vps-logo').remove()"></div>` : ""}
     <div class="vps-body">
     <h3>${v.officialUrl
@@ -183,6 +234,42 @@ function renderVps(vps) {
   </article>`).join("");
 }
 
+function bindVpsControls() {
+  document.querySelectorAll("[data-tier]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      vpsTier = btn.dataset.tier;
+      document.querySelectorAll("[data-tier]").forEach((b) => b.classList.toggle("active", b === btn));
+      renderVps();
+    });
+  });
+  document.querySelectorAll("[data-vps-sort]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      vpsSort = btn.dataset.vpsSort;
+      document.querySelectorAll("[data-vps-sort]").forEach((b) => b.classList.toggle("active", b === btn));
+      renderVps();
+    });
+  });
+}
+
+function bindSortSeg() {
+  document.querySelectorAll(".seg button[data-sort]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      filters.sort = btn.dataset.sort;
+      document.querySelectorAll(".seg button[data-sort]").forEach((b) => b.classList.toggle("active", b === btn));
+      applyFilters();
+    });
+  });
+}
+
+function bindBottomNav() {
+  document.querySelectorAll(".bottom-nav a").forEach((a) => {
+    a.addEventListener("click", () => {
+      document.querySelectorAll(".bottom-nav a").forEach((x) => x.removeAttribute("aria-current"));
+      a.setAttribute("aria-current", "page");
+    });
+  });
+}
+
 async function init() {
   const res = await fetch("/api/sitedata");
   if (!res.ok) {
@@ -193,14 +280,18 @@ async function init() {
   document.title = data.siteName || "代理客户端大全";
   $("#siteName").textContent = data.siteName || "代理客户端大全";
   allApps = data.apps || [];
-  fillFilterOptions();
+  allVps = data.vps || [];
+  buildFilterPanels();
+  bindSortSeg();
+  bindVpsControls();
+  bindBottomNav();
   applyFilters();
   renderAirports(data.airports || []);
-  renderVps(data.vps || []);
-  for (const id of ["q", "fPlatform", "fCore", "fPrice", "fOpen", "fSort"]) {
-    $("#" + id).addEventListener("input", applyFilters);
-    $("#" + id).addEventListener("change", applyFilters);
-  }
+  renderVps();
+  $("#q").addEventListener("input", () => {
+    filters.q = $("#q").value.trim().toLowerCase();
+    applyFilters();
+  });
 }
 
 init().catch((err) => {

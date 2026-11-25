@@ -61,7 +61,7 @@ async function init() {
   box.innerHTML = `<article class="detail">
     ${app.iconUrl ? `<img class="detail-icon" src="${esc(app.iconUrl)}" alt="" onerror="this.remove()">` : ""}
     <h1>${esc(app.name)}${app.alias ? ` <span class="alias" style="color:#888;font-size:15px;">${esc(app.alias)}</span>` : ""}</h1>
-    ${app.tag ? `<p><span class="tag" style="display:inline-block;background:#eef3ff;color:#0b5fff;font-size:12px;border-radius:4px;padding:1px 8px;">${esc(app.tag)}</span></p>` : ""}
+    ${app.tag ? `<p><span class="tag">${esc(app.tag)}</span></p>` : ""}
     <p>${esc(app.description || "")}</p>
     ${app.note ? `<p class="note">${esc(app.note)}</p>` : ""}
     <div class="actions">

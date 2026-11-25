@@ -9,35 +9,43 @@
 <body>
 <header class="site-header">
   <div class="wrap header-inner">
-    <a class="brand" href="/"><span id="siteName">代理客户端大全</span></a>
+    <a class="brand" href="/"><span class="brand-mark">代</span><span id="siteName">代理客户端大全</span></a>
+    <div class="header-search">
+      <svg class="search-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.5" y2="16.5"></line></svg>
+      <input id="q" type="search" placeholder="搜索应用…" aria-label="搜索">
+    </div>
   </div>
 </header>
 <main class="wrap">
+  <h1 class="visually-hidden">应用目录</h1>
   <section id="apps">
-    <h1>应用目录</h1>
-    <p class="intro">收录主流代理客户端的官方下载链接。价格以官网为准。</p>
-    <div class="toolbar">
-      <input id="q" type="search" placeholder="搜索应用名称、别名、介绍…" aria-label="搜索">
-      <select id="fPlatform" aria-label="平台"><option value="">全部平台</option></select>
-      <select id="fCore" aria-label="内核"><option value="">全部内核</option></select>
-      <select id="fPrice" aria-label="费用">
-        <option value="">免费 / 付费</option>
-        <option value="free">免费</option>
-        <option value="paid">付费</option>
-      </select>
-      <select id="fOpen" aria-label="开源">
-        <option value="">开源 / 闭源</option>
-        <option value="open">开源</option>
-        <option value="closed">闭源</option>
-      </select>
-      <select id="fSort" aria-label="排序">
-        <option value="default">综合排序</option>
-        <option value="stars">Star 数</option>
-        <option value="hot7d">7 日热度</option>
-        <option value="updated">最近更新</option>
-      </select>
+    <div class="filter-bar" id="filterBar">
+      <div class="chip-filter" data-filter="platform">
+        <button type="button" class="chip-btn" aria-haspopup="true" aria-expanded="false"><span class="chip-label">平台</span><svg class="chev" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg></button>
+        <div class="chip-panel" hidden></div>
+      </div>
+      <div class="chip-filter" data-filter="core">
+        <button type="button" class="chip-btn" aria-haspopup="true" aria-expanded="false"><span class="chip-label">内核</span><svg class="chev" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg></button>
+        <div class="chip-panel" hidden></div>
+      </div>
+      <div class="chip-filter" data-filter="open">
+        <button type="button" class="chip-btn" aria-haspopup="true" aria-expanded="false"><span class="chip-label">代码</span><svg class="chev" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg></button>
+        <div class="chip-panel" hidden></div>
+      </div>
+      <div class="chip-filter" data-filter="price">
+        <button type="button" class="chip-btn" aria-haspopup="true" aria-expanded="false"><span class="chip-label">价格</span><svg class="chev" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg></button>
+        <div class="chip-panel" hidden></div>
+      </div>
     </div>
-    <p id="resultCount" class="muted"></p>
+    <div class="sort-bar">
+      <div class="seg" role="group" aria-label="排序">
+        <button type="button" data-sort="default" class="active">综合</button>
+        <button type="button" data-sort="updated">最近更新</button>
+        <button type="button" data-sort="hot7d">开源热度</button>
+        <button type="button" data-sort="ratings">评分数</button>
+      </div>
+      <span id="resultCount" class="result-count"></span>
+    </div>
     <div id="appGrid" class="grid"></div>
     <p id="emptyMsg" class="muted" hidden>没有符合条件的应用。</p>
   </section>
@@ -49,18 +57,30 @@
   <section id="vps" hidden>
     <h2>VPS</h2>
     <p class="muted">价格与配置以官网为准。</p>
+    <div class="vps-controls">
+      <div class="chip-row" role="group" aria-label="档位">
+        <button type="button" class="mini-chip active" data-tier="">全部</button>
+        <button type="button" class="mini-chip" data-tier="cheap">便宜</button>
+        <button type="button" class="mini-chip" data-tier="mid">中等</button>
+        <button type="button" class="mini-chip" data-tier="premium">高端</button>
+      </div>
+      <div class="chip-row" role="group" aria-label="VPS 排序">
+        <button type="button" class="mini-chip active" data-vps-sort="default">综合</button>
+        <button type="button" class="mini-chip" data-vps-sort="price">价格从低到高</button>
+      </div>
+    </div>
     <div id="vpsList" class="vps-list"></div>
   </section>
 </main>
-<footer class="wrap muted">
-  <p>Star 数每天早上自动从 GitHub 刷新；商店评分数来自公开商店页面快照。本站仅收录官方下载链接，不含任何邀请码或推广链接。</p>
+<footer class="wrap site-footer">
+  <p>本站仅收录官方下载链接，不含任何邀请码或推广链接。</p>
 </footer>
 <script src="/app.js"></script>
 <nav class="bottom-nav" aria-label="主要栏目">
-  <a href="/#apps" aria-current="page">应用目录</a>
-  <a href="/#vps" id="navVps" hidden>VPS</a>
-  <a href="/#airports" id="navAirports" hidden>机场</a>
-  <a href="/admin.html">管理后台</a>
+  <a href="/#apps" aria-current="page"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg><span>应用</span></a>
+  <a href="/#vps" id="navVps" hidden><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="20" height="7" rx="2"></rect><rect x="2" y="14" width="20" height="7" rx="2"></rect><line x1="6" y1="6.5" x2="6.01" y2="6.5"></line><line x1="6" y1="17.5" x2="6.01" y2="17.5"></line></svg><span>VPS</span></a>
+  <a href="/#airports" id="navAirports" hidden><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="22 2 11 13"></polygon><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg><span>机场</span></a>
+  <a href="/admin.html"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg><span>管理后台</span></a>
 </nav>
 </body>
 </html>
