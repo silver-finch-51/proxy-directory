@@ -81,14 +81,24 @@ function cardHtml(app) {
 
 let allApps = [];
 let allVps = [];
-const filters = { q: "", platform: "", core: "", open: "", price: "", sort: "default" };
+const filters = { q: "", platform: "", price: "", sort: "default" };
 let vpsTier = "";
 let vpsSort = "default";
 
+// 平台快捷 chips：苹果 = iOS/macOS/tvOS，安卓 = Android，其余按单个平台匹配。
+const PLATFORM_GROUPS = {
+  apple: ["iOS", "macOS", "tvOS"],
+  android: ["Android"],
+};
+
+function matchPlatform(app, key) {
+  if (!key) return true;
+  const platforms = app.platforms || [];
+  if (PLATFORM_GROUPS[key]) return platforms.some((p) => PLATFORM_GROUPS[key].includes(p));
+  return platforms.includes(key);
+}
+
 const FILTER_DEFS = {
-  platform: { label: "平台", allLabel: "全部平台", options: () => [...new Set(allApps.flatMap((a) => a.platforms || []))].sort() },
-  core: { label: "内核", allLabel: "全部内核", options: () => [...new Set(allApps.flatMap((a) => a.cores || []))].sort() },
-  open: { label: "代码", allLabel: "全部", options: () => ["open", "closed"], labels: { open: "开源", closed: "闭源" } },
   price: { label: "价格", allLabel: "全部", options: () => ["free", "paid"], labels: { free: "免费", paid: "付费" } },
 };
 
@@ -145,11 +155,8 @@ function applyFilters() {
         .filter(Boolean).join(" ").toLowerCase();
       if (!hay.includes(filters.q)) return false;
     }
-    if (filters.platform && !(app.platforms || []).includes(filters.platform)) return false;
-    if (filters.core && !((app.cores || []).includes(filters.core) || app.core === filters.core)) return false;
+    if (filters.platform && !matchPlatform(app, filters.platform)) return false;
     if (filters.price && app.priceStatus !== filters.price) return false;
-    if (filters.open === "open" && !app.openSource) return false;
-    if (filters.open === "closed" && app.openSource) return false;
     return true;
   });
 
@@ -251,6 +258,16 @@ function bindVpsControls() {
   });
 }
 
+function bindQuickChips() {
+  document.querySelectorAll(".quick-chip[data-platform]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      filters.platform = btn.dataset.platform;
+      document.querySelectorAll(".quick-chip[data-platform]").forEach((b) => b.classList.toggle("active", b === btn));
+      applyFilters();
+    });
+  });
+}
+
 function bindSortSeg() {
   document.querySelectorAll(".seg button[data-sort]").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -282,6 +299,7 @@ async function init() {
   allApps = data.apps || [];
   allVps = data.vps || [];
   buildFilterPanels();
+  bindQuickChips();
   bindSortSeg();
   bindVpsControls();
   bindBottomNav();

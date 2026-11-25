@@ -57,9 +57,19 @@ a:hover { text-decoration: underline; }
 
 h2 { font-size: 19px; margin: 28px 0 4px; }
 
+/* platform quick chips (single source of truth for the platform filter) */
+.quick-chips {
+  display: flex; flex-wrap: wrap; gap: 8px; padding: 14px 0 4px;
+}
+.quick-chip {
+  background: #f0f0ee; color: #333; border: none; border-radius: 999px;
+  padding: 7px 14px; font-size: 14px; cursor: pointer; white-space: nowrap;
+}
+.quick-chip.active { background: #111; color: #fff; font-weight: 600; }
+
 /* filter chips with dropdown panels */
 .filter-bar {
-  display: flex; flex-wrap: wrap; gap: 8px; padding: 14px 0 10px;
+  display: flex; flex-wrap: wrap; gap: 8px; padding: 6px 0 10px;
 }
 .chip-filter { position: relative; }
 .chip-btn {
