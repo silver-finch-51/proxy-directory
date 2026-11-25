@@ -58,8 +58,8 @@ function statsLine(app) {
 
 function cardHtml(app) {
   const chips = [];
-  if (app.tag) chips.push(`<span class="chip">${esc(app.tag)}</span>`);
   const platforms = app.platforms || [];
+  if (app.tag && !platforms.includes(app.tag)) chips.push(`<span class="chip">${esc(app.tag)}</span>`);
   platforms.slice(0, 3).forEach((p) => chips.push(`<span class="chip">${esc(p)}</span>`));
   if (platforms.length > 3) chips.push(`<span class="chip">+${platforms.length - 3}</span>`);
   const stats = statsLine(app);

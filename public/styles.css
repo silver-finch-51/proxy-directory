@@ -57,6 +57,9 @@ a:hover { text-decoration: underline; }
 
 h2 { font-size: 19px; margin: 28px 0 4px; }
 
+/* anchor jumps must clear the sticky header (~72px tall) */
+main section[id] { scroll-margin-top: 84px; }
+
 /* platform quick chips (single source of truth for the platform filter) */
 .quick-chips {
   display: flex; flex-wrap: wrap; gap: 8px; padding: 14px 0 4px;
