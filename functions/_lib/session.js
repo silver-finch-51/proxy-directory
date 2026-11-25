@@ -9,7 +9,7 @@
 // per-user salt — never in plaintext. `role` is never accepted from the
 // client: registration always creates role "user"; the admin session is
 // created server-side by /api/admin/login with role "admin".
-import { loadSessions, saveSessions } from "./store.js";
+import { loadSessions, saveSessions, loadUsers } from "./store.js";
 
 const encoder = new TextEncoder();
 
@@ -100,6 +100,18 @@ export async function getSession(request, env) {
     delete sessions[token];
     await saveSessions(env, sessions);
     return null;
+  }
+  // The user record is the source of truth: KV reads are eventually
+  // consistent, so a session whose user was deleted (or whose write raced
+  // with a stale replica) must not authenticate. Admin sessions have no
+  // user record and skip this check.
+  if (s.userId && s.userId !== "admin") {
+    const users = await loadUsers(env);
+    if (!users.some((u) => u.id === s.userId)) {
+      delete sessions[token];
+      await saveSessions(env, sessions);
+      return null;
+    }
   }
   return { ...s, token };
 }
